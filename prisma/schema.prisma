@@ -1,0 +1,290 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NewsStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+  ARCHIVED
+}
+
+enum CareerStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  passwordHash String
+  name         String
+  role         Role            @default(EDITOR)
+  avatarUrl    String?
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  articles     NewsArticle[]
+  activities   AdminActivity[]
+
+  @@index([email])
+}
+
+model CompanyProfile {
+  id               String   @id @default(uuid())
+  isSingleton      Boolean  @unique @default(true)
+  name             String   @default("PT RIN Group Indonesia")
+  shortName        String   @default("RIN Group")
+  description      String?  @db.Text
+  about            String?  @db.Text
+  vision           String?  @db.Text
+  mission          String?  @db.Text
+  philosophy       String?  @db.Text
+  address          String?  @db.Text
+  email            String?
+  phone            String?
+  mapUrl           String?  @db.Text
+  logo             String?
+  favicon          String?
+  ogImage          String?
+  instagram        String?
+  linkedin         String?
+  tiktok           String?
+  otherSocialLinks Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Brand {
+  id               String          @id @default(uuid())
+  name             String
+  slug             String          @unique
+  tagline          String?
+  shortDescription String?         @db.Text
+  description      String?         @db.Text
+  category         String?
+  concept          String?         @db.Text
+  story            String?         @db.Text
+  logoUrl          String?
+  coverImage       String?
+  gallery          String[]        @default([])
+  sortOrder        Int             @default(0)
+  status           ContentStatus   @default(PUBLISHED)
+  isFeatured       Boolean         @default(false)
+  seoTitle         String?
+  seoDescription   String?         @db.Text
+  ogImage          String?
+  locations        BrandLocation[]
+  socials          BrandSocial[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([slug])
+  @@index([status, sortOrder])
+}
+
+model BrandLocation {
+  id        String   @id @default(uuid())
+  brandId   String
+  brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  name      String
+  address   String   @db.Text
+  city      String?
+  mapUrl    String?  @db.Text
+  phone     String?
+  hours     String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brandId])
+}
+
+model BrandSocial {
+  id        String   @id @default(uuid())
+  brandId   String
+  brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  platform  String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brandId])
+}
+
+model NewsCategory {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  slug        String        @unique
+  description String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  articles    NewsArticle[]
+
+  @@index([slug])
+}
+
+model NewsArticle {
+  id              String        @id @default(uuid())
+  title           String
+  slug            String        @unique
+  excerpt         String?       @db.Text
+  content         String        @db.Text
+  coverImage      String?
+  categoryId      String?
+  category        NewsCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId        String?
+  author          User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  status          NewsStatus    @default(DRAFT)
+  publishedAt     DateTime?
+  seoTitle        String?
+  seoDescription  String?       @db.Text
+  ogImage         String?
+  readTimeMinutes Int           @default(3)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([slug])
+  @@index([status, publishedAt])
+  @@index([categoryId])
+}
+
+model Career {
+  id               String       @id @default(uuid())
+  title            String
+  slug             String       @unique
+  department       String
+  location         String
+  employmentType   String       @default("Full-time")
+  description      String       @db.Text
+  responsibilities String?      @db.Text
+  requirements     String?      @db.Text
+  benefits         String?      @db.Text
+  applicationUrl   String?
+  status           CareerStatus @default(DRAFT)
+  closingDate      DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([status, closingDate])
+}
+
+model Media {
+  id         String   @id @default(uuid())
+  url        String
+  filename   String
+  mimeType   String
+  size       Int
+  width      Int?
+  height     Int?
+  altText    String?
+  folder     String   @default("general")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([folder])
+  @@index([filename])
+}
+
+model SeoMetadata {
+  id            String   @id @default(uuid())
+  path          String   @unique
+  title         String
+  description   String   @db.Text
+  canonical     String?
+  ogTitle       String?
+  ogDescription String?  @db.Text
+  ogImage       String?
+  robots        String   @default("index, follow")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([path])
+}
+
+model SiteSetting {
+  id              String   @id @default(uuid())
+  isSingleton     Boolean  @unique @default(true)
+  siteName        String   @default("RIN Group Indonesia")
+  siteUrl         String   @default("https://ringroup.co.id")
+  defaultSeoTitle String   @default("RIN Group Indonesia | Food & Beverage Company")
+  defaultMetaDesc String   @default("RIN Group Indonesia is a Food & Beverage company focused on developing and managing distinctive culinary concepts and restaurant experiences in Indonesia.")
+  defaultOgImage  String?
+  gaId            String?
+  maintenanceMode Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id        String        @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String        @db.Text
+  status    ContactStatus @default(NEW)
+  ipHash    String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AdminActivity {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  eventName String
+  path      String
+  referrer  String?
+  userAgent String?
+  ipHash    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventName])
+  @@index([path])
+  @@index([createdAt])
+}
