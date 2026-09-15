@@ -4,6 +4,7 @@ import './globals.css';
 import { Navbar } from '@/components/public/Navbar';
 import { Footer } from '@/components/public/Footer';
 import { GoogleAnalytics } from '@/components/public/GoogleAnalytics';
+import { WatermarkBadge } from '@/components/public/WatermarkBadge';
 import { prisma } from '@/lib/prisma';
 import { ContentStatus } from '@prisma/client';
 
@@ -121,6 +122,7 @@ export default async function RootLayout({
         <Navbar companyName={profile?.shortName || 'RIN GROUP'} />
         <div className="flex-1">{children}</div>
         <Footer profile={profile} brands={brands} />
+        <WatermarkBadge />
       </body>
     </html>
   );

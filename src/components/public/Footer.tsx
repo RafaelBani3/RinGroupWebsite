@@ -119,8 +119,17 @@ export function Footer({ profile, brands = [] }: FooterProps) {
         </div>
 
         {/* Bottom Copyright & Legal Links */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
-          <p>© {currentYear} PT RIN Group Indonesia. All rights reserved.</p>
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+            <p className="text-neutral-400">© {currentYear} RafaelBani. All rights reserved.</p>
+            <span className="hidden sm:inline text-neutral-700">•</span>
+            <div className="inline-flex items-center gap-1.5 text-[11px] text-[#B69B63]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B69B63] inline-block" />
+              <span>Crafted & Engineered by</span>
+              <strong className="text-white font-medium">RafaelBani</strong>
+            </div>
+          </div>
+
           <div className="flex items-center gap-6 text-[11px]">
             <Link href="/privacy-policy" className="hover:text-neutral-300 transition-colors">
               Privacy Policy
